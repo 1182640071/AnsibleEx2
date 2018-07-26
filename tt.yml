@@ -1,0 +1,6 @@
+---
+- hosts: ALL
+  remote_user: root
+  tasks:
+  - name: just test
+    shell: echo `whoami` >>/tmp/test.log;
