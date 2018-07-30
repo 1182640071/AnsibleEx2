@@ -3,12 +3,13 @@
 
 # Broker 设置 RabbitMQ
 BROKER_URL = 'amqp://guest@172.16.22.252:5672/'
-CELERY_RESULT_BACKEND = 'amqp://guest@172.16.22.252:5672/'
+# CELERY_RESULT_BACKEND = 'amqp://guest@172.16.22.252:5672/'
+CELERY_RESULT_BACKEND = 'redis://:omygad911@172.16.22.232:6379/3'
 
 # Tasks 位于 worker.py 中
 CELERY_IMPORTS = ('tasks', )
 
-# 默认为1次/秒的任务
+# 默认为1次/秒的任务 ,规定任务执行频度
 CELERY_ANNOTATIONS = {'tasks.add': {'rate_limit': '1/s'}}
 
 CELERY_ROUTES = {'tasks.add': {'queue': 'ansible_log'}}

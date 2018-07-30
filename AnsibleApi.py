@@ -185,7 +185,7 @@ class AnsibleOne:
                 "sudo": "yes || no",
                 "sudo_user": "root",
                 "remote_user": "tinet_manage",
-                "user_passwd": "omygad911",
+                "token": "omygad911",
                 "values": ["whoami", "uptime"]
             }
         }
@@ -199,7 +199,7 @@ class AnsibleOne:
             "sudo": "yes || no",
             "sudo_user": "root",
             "remote_user": "tinet_manage",
-            "user_passwd": "omygad911",
+            "token": "omygad911",
             "values":["ansible_nodename","ansible_mounts"]
             }
         }
@@ -212,7 +212,7 @@ class AnsibleOne:
             "sudo": "yes || no",
             "sudo_user": "root",
             "remote_user": "tinet_manage",
-            "user_passwd": "omygad911",
+            "token": "omygad911",
             "values":["tt.yml","/etc/ansible/test.yml"]
             }
         }
@@ -271,8 +271,9 @@ class AnsibleOne:
         celery = Celery()
         celery.config_from_object('celeryconfig')
         x = celery.send_task('ansible_log.add', args=[user, rs , type_request])
+        # print x
         # print x.id , x.app , x.backend , x.parent , x.on_ready , x._cache , x._ignored
-        # print x.get(timeout=20)
+        # print x.get(timeout=20)   #同步调用
         return json.dumps(rs)
 
     def analyse(self , res , list):

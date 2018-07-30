@@ -5,7 +5,7 @@
 from celery import Celery,platforms
 import os
 
-app = Celery('tasks',backend='amqp://guest@172.16.22.252:5672/', broker='amqp://guest@172.16.22.252:5672/')
+app = Celery('tasks',backend='redis://:omygad911@172.16.22.232:6379/3', broker='amqp://guest@172.16.22.252:5672/')
 #backend:消息中间件类型，可无；broker：指定AMQP Broker(Advanced Message Queue Protocal，高级消息队列协议 消息中间件)
 platforms.C_FORCE_ROOT = True       #用户解决root用户无法启动worker的问题
 
