@@ -2,15 +2,15 @@ ansibleEx2使用说明文档
 
 postgresql数据库
 创建表
-1 ansible_users
- 字段：
-    user_name varchar ansible用户名
-    passwd    varchar 用户密码（md5加密存储）
+1 ansible_users  
+ 字段：  
+    user_name varchar ansible用户名  
+    passwd    varchar 用户密码（md5加密存储）  
 
-2 server_passwd
- 字段：
-    server_user   varchar 服务器远程登录账号
-    server_passwd varchar 服务器用户密码（base64加密）
+2 server_passwd  
+ 字段：  
+    server_user   varchar 服务器远程登录账号  
+    server_passwd varchar 服务器用户密码（base64加密）  
 
 
 
