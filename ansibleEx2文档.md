@@ -14,8 +14,8 @@ postgresql数据库
 
 
 
-通过web.py框架对ansible的api进行封装，提供http/https接口
-       #登录，获取token
+通过web.py框架对ansible的api进行封装，提供http/https接口  
+       #登录，获取token  
         {       
             "type": "login",
             "data": {
@@ -23,7 +23,7 @@ postgresql数据库
                 "passwd":"oommg",
                 "remote_user":"tinet_manage"
             }
-        }
+        }  
 
  {
             "type": "shell",
@@ -36,7 +36,7 @@ postgresql数据库
                 “token”: "",
                 "values": ["whoami;whoami",]
             }
-        }
+        }  
 
 
 {
@@ -50,7 +50,7 @@ postgresql数据库
             “token”: "",
             "values":["ansible_nodename","ansible_mounts"]
             }
-        }
+        }  
 
         {
           "type": "playbook",
