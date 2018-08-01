@@ -13,13 +13,18 @@ date 2018.7.23
 '''
 
 
-import web,logging
+import web,logging , os , sys
 import json , psycopg2
 import hashlib , base64
 import random , string
 from web.wsgiserver import CherryPyWSGIServer
 from ansibleFunction import Runner
 from celery import Celery
+import ConfigParser
+
+
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 
 # CherryPyWSGIServer.ssl_certificate = "/root/ansibleTest/myserver.crt"
@@ -55,6 +60,20 @@ else:
     session = web.config._session
 
 
+conf = ConfigParser.ConfigParser()
+conf.read("ansible_server.cfg")
+
+write_log = conf.get('base', 'write_log').strip()
+remote_log = conf.get('base', 'remote_log').strip()
+path_log = conf.get('base', 'path_log').strip()
+
+db_ip = conf.get('db', 'ip').strip()
+db_port = int(conf.get('db', 'port').strip())
+db_user = conf.get('db', 'user').strip()
+db_passwd = conf.get('db', 'passwd').strip()
+db_database = conf.get('db', 'database').strip()
+
+
 class AnsibleLogin:
     def GET(self):
         return 'Please Send Post Request'
@@ -66,7 +85,7 @@ class AnsibleLogin:
             "data": {
                 "user": "wangml",
                 "passwd":"oommg",
-                "remote_user":"tinet_manage"
+                "remote_user":"not_root_user"
             }
         }
         :return:
@@ -114,7 +133,7 @@ class AnsibleLogin:
         :return: 0成功  1失败
         '''
         try:
-            conn = psycopg2.connect(host="172.16.22.252",port=5432,user="postgres",password="postgres",database="ansibleEx2")
+            conn = psycopg2.connect(host=db_ip,port=db_port,user=db_user,password=db_passwd,database=db_database)
         except Exception as e:
             print e
             return 1
@@ -148,7 +167,7 @@ class AnsibleLogin:
         :return:密码str(已加密)
         '''
         try:
-            conn = psycopg2.connect(host="172.16.22.252",port=5432,user="postgres",password="postgres",database="ansibleEx2")
+            conn = psycopg2.connect(host=db_ip,port=db_port,user=db_user,password=db_passwd,database=db_database)
         except Exception as e:
             print e
             return 1
@@ -184,7 +203,7 @@ class AnsibleOne:
                 "user": "wangml",
                 "sudo": "yes || no",
                 "sudo_user": "root",
-                "remote_user": "tinet_manage",
+                "remote_user": "not_root_user",
                 "token": "omygad911",
                 "values": ["whoami", "uptime"]
             }
@@ -198,7 +217,7 @@ class AnsibleOne:
             "user": "wangml",
             "sudo": "yes || no",
             "sudo_user": "root",
-            "remote_user": "tinet_manage",
+            "remote_user": "not_root_user",
             "token": "omygad911",
             "values":["ansible_nodename","ansible_mounts"]
             }
@@ -211,15 +230,13 @@ class AnsibleOne:
             "user": "wangml",
             "sudo": "yes || no",
             "sudo_user": "root",
-            "remote_user": "tinet_manage",
+            "remote_user": "not_root_user",
             "token": "omygad911",
             "values":["tt.yml","/etc/ansible/test.yml"]
             }
         }
         :return:
         '''
-        # session.token_list=[]
-        # session.token_list.append('bbbbbbbb')
         web.header('Content-Type', 'application/json;charset=UTF-8')
         data = web.data()
         info = {}
@@ -267,14 +284,32 @@ class AnsibleOne:
             rs = self.analyse(res , values)
         else:
             rs = Aapi.run_ad_hoc(host ,remote_user , user_passwd , tasks)
-
-        celery = Celery()
-        celery.config_from_object('celeryconfig')
-        x = celery.send_task('ansible_log.add', args=[user, rs , type_request])
-        # print x
-        # print x.id , x.app , x.backend , x.parent , x.on_ready , x._cache , x._ignored
-        # print x.get(timeout=20)   #同步调用
+        if write_log == '1':
+            if remote_log == '1':
+                celery = Celery()
+                celery.config_from_object('celeryconfig')
+                x = celery.send_task('ansible_log.add', args=[user, rs , type_request])
+                # print x
+                # print x.id , x.app , x.backend , x.parent , x.on_ready , x._cache , x._ignored
+                # print x.get(timeout=20)   #同步调用
+            else:
+                self.add(user, rs , type_request)
         return json.dumps(rs)
+
+    def add(self , user,result , type_request):
+        list = ['unreachable' , 'status','failed','skipped','success']
+        for key in list:
+            for k in result[key]:
+                try:
+                    os.system('echo " " >> ' + path_log + k + '.ansible.log')
+                    os.system('echo `date` >> ' + path_log + k + '.ansible.log')
+                    cmd = 'echo [' + key + '] ' + user + ': ['+type_request+'] ==>' + str(result[key][k]) + ' >> ' + path_log + k + '.ansible.log'
+                    os.system(cmd)
+                except Exception , e:
+                    print e
+                    os.system('echo ' + str(result) + ' >> ' + path_log + 'ansible.log')
+        return 'ok'
+
 
     def analyse(self , res , list):
         if len(list) == 0:
