@@ -235,6 +235,35 @@ class AnsibleOne:
             "values":["tt.yml","/etc/ansible/test.yml"]
             }
         }
+
+
+        copy:
+        {
+            "type": "copy",
+            "data": {
+                "host": "172.16.22.252,172.16.22.232",   #"ip1,ip2 || groupname",
+                "user": "wangml",
+                "sudo": "yes",
+                "sudo_user": "root",
+                "remote_user": "not_root_user",
+                "token": "MP9QFBVPDOQVZAJYLJ6U8NA0",
+                "values": ["src=/tmp/wmltest.log dest=/tmp"]
+            }
+        }
+
+        {
+            "type": "script",
+            "data": {
+                "host": "172.16.22.252,172.16.22.232",    #"ip1,ip2 || groupname",
+                "user": "wangml",
+                "sudo": "yes",
+                "sudo_user": "root",
+                "remote_user": "not_root_user",
+                "token": "MP9QFBVPDOQVZAJYLJ6U8NA0",
+                "values": ["/Users/wml/github/AnsibleEx2/test.sh args"]
+            }
+        }
+
         :return:
         '''
         web.header('Content-Type', 'application/json;charset=UTF-8')
@@ -261,6 +290,7 @@ class AnsibleOne:
             # user_passwd = info['data']["user_passwd"]   #ansible用户密码
             values = info['data']['values']     #shell指令或者过滤信息或者playbook的yml文件
             host = ''                   #操作主机
+            #暂时先将各模块分开写,便于以后针对各模块添加个性化功能
             if type_request == 'playbook':
                 host = ''
                 tasks = values
@@ -271,6 +301,14 @@ class AnsibleOne:
             elif type_request == 'setup':
                 host = info['data']['host']
                 tasks.append(dict(action=dict(module='setup'), register='shell_out'))
+            elif type_request == 'copy':
+                host = info['data']['host']
+                for module_args in values:
+                    tasks.append(dict(action=dict(module='copy', args=module_args), register='shell_out'))
+            elif type_request == 'script':
+                host = info['data']['host']
+                for module_args in values:
+                    tasks.append(dict(action=dict(module='script', args=module_args), register='shell_out'))
             else:
                 return json.dumps("the type of request error")
         except Exception , e:
